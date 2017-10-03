@@ -146,9 +146,9 @@ var whatsNext = function() {
     }
   });
 };
-
-var showCards = function() {
-  // read the log.txt file
+// initialize function to show cards to user
+function showCards() {
+  // pass the log.txt file containing the flashcards written by the user
   fs.readFile('./log.txt', 'utf8', function(error, data) {
     //if there is an error, log it
     if (error) {
@@ -157,40 +157,56 @@ var showCards = function() {
     else if(data === undefined){
       return console.log("error");
     }
+    //after passing the log.txt file, use split to create an array of questions
     var questions = data.split(';');
+    // create function to catch not blank values
     var notBlank = function(value) {
       return value;
     };
+    //keep all full questions in questions array
     questions = questions.filter(notBlank);
     var count = 0;
+    //call show question function, passing questions and count
     showQuestion(questions, count);
   });
 };
 
-var showQuestion = function(array, index) {
+//show question function, takes in an array and index of an array
+function showQuestion(array, index) {
+  // not sure what this does
   question = array[index];
+  // creates parsed question, which is in json parsed format
   var parsedQuestion = JSON.parse(question);
+  //creates conditional variables
   var questionText;
   var correctReponse;
+
+  //checks question object to see if it contains Basic or Cloze data
   if (parsedQuestion.type === 'basic') {
+    //if basic, set the question text equal to the string front, and correct response equal to the string back
     questionText = parsedQuestion.front;
     correctReponse = parsedQuestion.back;
   } else if (parsedQuestion.type === 'cloze') {
+    //if clozed, set question text equal to the cloze deleted string, and correct response to the cloze portion of question
     questionText = parsedQuestion.clozeDeleted;
     correctReponse = parsedQuestion.cloze;
   }
+  // prompt user to check if users input string is equal to the correct response string
   inquirer.prompt([{
     name: 'response',
     message: questionText
   }]).then(function(answer) {
+    //if the string is equal, log to the user that their answer is correct
     if (answer.response === correctReponse) {
       console.log('Correct!');
       if (index < array.length - 1) {
+        //continue questions until questions array is finished with show question function
         showQuestion(array, index + 1);
       }
     } else {
       console.log('Wrong!');
       if (index < array.length - 1) {
+          //continue questions until questions array is finished with show question function
         showQuestion(array, index + 1);
       }
     }
