@@ -1,9 +1,12 @@
+//import dependencies
 const BasicFlashcard = require('./basic.js');
 const ClozeFlashcard = require('./cloze.js');
 const inquirer = require('inquirer');
 const fs = require('fs');
 
+//prompt the user to select options
 inquirer.prompt([{
+  //allow user to select from list of choices to run two operations
   name: 'command',
   message: 'What would you like to do?',
   type: 'list',
@@ -11,20 +14,30 @@ inquirer.prompt([{
     name: 'add-flashcard'
   }, {
     name: 'show-all-cards'
+  }, {
+    name: 'delete-cards'
   }]
 }]).then(function(answer) {
+  //conditional for each command
   if (answer.command === 'add-flashcard') {
+    // run function for adding a new flashcard
     addCard();
   } else if (answer.command === 'show-all-cards') {
+    //run function for practicing cards
     showCards();
+  }
+  else if(answer.command === 'delete-cards'){
+    fs.writeFile('log.txt', '', function(){console.log('All Flashcards Deleted')});
   }
 });
 
+//function for adding a new card
 var addCard = function() {
   inquirer.prompt([{
     name: 'cardType',
     message: 'What type of flashcard would you like to create?',
     type: 'list',
+    //allow users to select from two types of flashcards
     choices: [{
       name: 'basic-flashcard'
     }, {
@@ -34,6 +47,8 @@ var addCard = function() {
     if (answer.cardType === 'basic-flashcard') {
       inquirer.prompt([{
         name: 'front',
+
+        //take user input and check if possible for question portion
         message: 'What is the question?',
         validate: function(input) {
           if (input === '') {
@@ -45,6 +60,7 @@ var addCard = function() {
         }
       }, {
         name: 'back',
+        //take user input and check if possible for answer portion
         message: 'What is the answer?',
         validate: function(input) {
           if (input === '') {
@@ -56,7 +72,9 @@ var addCard = function() {
         }
       }]).then(function(answer) {
         let newBasic = new BasicFlashcard(answer.front, answer.back);
+        //use external basic-flashcard constructor to create a new instance of basic-flashcard
         newBasic.create();
+        //run 'reset' function
         whatsNext();
       });
     } else if (answer.cardType === 'cloze-flashcard') {
@@ -90,8 +108,10 @@ var addCard = function() {
         let text = answer.text;
         let cloze = answer.cloze;
         if (text.includes(cloze)) {
+          //use external cloze constructor to create a new instance of cloze-flashcard
           let newCloze = new ClozeFlashcard(text, cloze);
           newCloze.create();
+          // run 'reset function'
           whatsNext();
         } else {
           console.log('Please try again.');
@@ -133,6 +153,9 @@ var showCards = function() {
     //if there is an error, log it
     if (error) {
       console.log('Error occurred: ' + error);
+    }
+    else if(data === undefined){
+      return console.log("error");
     }
     var questions = data.split(';');
     var notBlank = function(value) {
